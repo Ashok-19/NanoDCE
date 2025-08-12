@@ -87,7 +87,7 @@ Refer [Param_check.ipynb](https://github.com/Ashok-19/ZeroDCE_extension-KD/blob/
 
 ## Results
 
-Results for both test images and videos were uploaded in this [GDrive]()
+Results for both test images and videos were uploaded in this [GDrive](https://drive.google.com/drive/folders/1-NzPEyCqdU4PwIbRDre48vN4SttSlAfv?usp=sharing)
 
 
 
