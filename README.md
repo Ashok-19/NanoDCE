@@ -1,7 +1,7 @@
 
 # ZeroDCE_Extension-KD
 
-This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to even a smaller version.
+This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version.
 
         Original Model - 10561 params
 
@@ -30,6 +30,101 @@ Total loss = `α × output_distillation + β × feature_matching + (1-α-β) × 
 - Task losses (color, exposure, smoothness) maintain domain-specific constraints  
 - Default weights (α=0.7, β=0.2) prioritize output fidelity while preserving structural knowledge transfer
 
+## Inference times
+
+This script will provide an approximate inference results but accurate one.
+        python inference.py
+
+#### Sample Output
+        ================================================================================
+        COMPREHENSIVE MODEL BENCHMARK
+        ================================================================================
+        
+        ----------------------------------------
+        BENCHMARKING TEACHER MODEL
+        ----------------------------------------
+        Teacher Model Parameters: 10,561
+        Teacher Model Size: 0.04 MB
+        
+        Testing input size: (1, 3, 256, 256)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 5.15 ± 0.15 ms
+          FPS: 194.18
+        
+        Testing input size: (1, 3, 512, 512)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 19.90 ± 0.17 ms
+          FPS: 50.26
+        
+        Testing input size: (1, 3, 1024, 1024)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 79.58 ± 0.24 ms
+          FPS: 12.57
+        
+        ----------------------------------------
+        BENCHMARKING STUDENT MODEL
+        ----------------------------------------
+        Student Model Parameters: 565
+        Student Model Size: 0.00 MB
+        
+        Testing input size: (1, 3, 256, 256)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 2.22 ± 0.55 ms
+          FPS: 450.65
+        
+        Testing input size: (1, 3, 512, 512)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 4.72 ± 0.11 ms
+          FPS: 211.83
+        
+        Testing input size: (1, 3, 1024, 1024)
+        Warming up for 20 iterations...
+        Running benchmark for 100 iterations...
+        Completed 100/100 iterations
+          Average time: 17.33 ± 0.15 ms
+          FPS: 57.72
+        
+        ================================================================================
+        BENCHMARK SUMMARY
+        ================================================================================
+        Input Size      Teacher Time (ms)    Student Time (ms)    Speedup    Teacher FPS     Student FPS     FPS Gain  
+        ------------------------------------------------------------------------------------------------------------------------
+        (256, 256)px    5.15                 2.22                 2.32      x 194.2           450.6           2.32x
+        (512, 512)px    19.90                4.72                 4.22      x 50.3            211.8           4.22x
+        (1024, 1024)px  79.58                17.33                4.59      x 12.6            57.7            4.59x
+        
+        --------------------------------------------------
+        MODEL SIZE COMPARISON
+        --------------------------------------------------
+        Teacher Parameters: 10,561
+        Student Parameters: 565
+        Parameter Reduction: 94.7% (18.7x smaller)
+        Teacher Size: 0.04 MB
+        Student Size: 0.00 MB
+        Size Reduction: 94.7% (18.7x smaller)
+        
+        --------------------------------------------------
+        ACTUAL WEBCAM PERFORMANCE TEST (10 seconds)
+        --------------------------------------------------
+        Testing with default webcam (this may take ~20 seconds)...
+        Testing actual webcam processing FPS...
+        Webcam resolution: 640x480
+        Testing actual webcam processing FPS...
+        Webcam resolution: 640x480
+        Teacher Webcam FPS: 168.42 (5.94 ms/frame)
+        Student Webcam FPS: 191.34 (5.23 ms/frame)
+        Webcam FPS Improvement: 1.14x faster
+        
 ## Changes
 
 Only Number of filter channels were changed -> from 32 to 4
@@ -90,5 +185,7 @@ Refer [Param_check.ipynb](https://github.com/Ashok-19/ZeroDCE_extension-KD/blob/
 Results for both test images and videos were uploaded in this [GDrive](https://drive.google.com/drive/folders/1-NzPEyCqdU4PwIbRDre48vN4SttSlAfv?usp=sharing)
 
 
+## Contact
 
+Mail -> ashokraja1910@gmail.com
 
