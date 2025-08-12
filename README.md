@@ -59,7 +59,14 @@ Refer [model.py](https://github.com/Ashok-19/ZeroDCE_extension-KD/blob/a86b25440
 
 ## Training
 
-Instead of using the same 2002 samples provided in the original model's training data, an additional amount of another 2231 samples were added to original training data from datasets such as LIME, DICM, LOL-v2 and LoLI-street to avoid overfitting.
+Instead of using the same 2002 samples provided in the original model's [training data](https://github.com/Li-Chongyi/Zero-DCE_extension/tree/09f202b690f82da939b8e6ec8535960ae97ad8bd/Zero-DCE%2B%2B/data), an additional amount of another 2231 samples were added to original training data from datasets such as LIME, DICM, LOL-v2 and LoLI-street to avoid overfitting.
+
+
+Before training create folder structure like below
+
+                /data-
+                   |-train_data
+                   |-test_data
 
 
 To train the student model, use
