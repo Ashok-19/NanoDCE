@@ -25,7 +25,7 @@ def weights_init(m):
 
 
 class FeatureExtractor:
-    """Helper class to extract intermediate features for feature matching"""
+    
     def __init__(self, model):
         self.model = model
         self.features = {}
@@ -40,21 +40,24 @@ class FeatureExtractor:
         }
     
     def register_hooks(self):
-        """Register forward hooks to capture intermediate features"""
         for name, module in self.model.named_modules():
             if name in self.target_layers:
                 hook = module.register_forward_hook(self.save_features(name))
                 self.hooks.append(hook)
     
+
+
     def save_features(self, layer_name):
         def hook(module, input, output):
             feature_name = self.target_layers[layer_name]
             self.features[feature_name] = output
         return hook
     
+
     def clear_features(self):
         self.features = {}
     
+
     def remove_hooks(self):
         for hook in self.hooks:
             hook.remove()
@@ -62,29 +65,22 @@ class FeatureExtractor:
 
 
 def knowledge_distillation_loss(student_output, teacher_output, temperature=4.0):
-    """
-    Compute knowledge distillation loss
-    """
-    # MSE loss between student and teacher outputs
+    
+    
     mse_loss = nn.MSELoss()
     
-    # Pixel-wise loss (student should match teacher's enhanced image)
+   
     pixel_loss = mse_loss(student_output[0], teacher_output[0])
     
-    # Illumination map loss
     illumination_loss = mse_loss(student_output[1], teacher_output[1])
     
-    # Total distillation loss
     distillation_loss = pixel_loss + 0.1 * illumination_loss
     
     return distillation_loss
 
 
 def feature_matching_loss(student_features, teacher_features):
-    """
-    Compute feature matching loss between student and teacher features
-    Handles different feature dimensions by using adaptive pooling
-    """
+    
     mse_loss = nn.MSELoss()
     feature_loss = 0.0
     
@@ -99,7 +95,7 @@ def feature_matching_loss(student_features, teacher_features):
     for feature_name in student_features.keys():
         if feature_name in teacher_features:
             student_feat = student_features[feature_name]
-            teacher_feat = teacher_features[feature_name].detach()  # Don't backprop to teacher
+            teacher_feat = teacher_features[feature_name].detach()  # Dont backprop to teacher
             
             # Use adaptive pooling to match spatial dimensions if needed
             if student_feat.shape[2:] != teacher_feat.shape[2:]:
@@ -107,9 +103,9 @@ def feature_matching_loss(student_features, teacher_features):
                 teacher_feat = nn.functional.adaptive_avg_pool2d(teacher_feat, student_feat.shape[2:])
             
             # Handle channel dimension mismatch by using only spatial information
-            # Option 1: Global average pooling to reduce to spatial information only
+            # Global average pooling to reduce to spatial information only
             if student_feat.shape[1] != teacher_feat.shape[1]:
-                # Reduce both to spatial mean features
+                
                 student_spatial = torch.mean(student_feat, dim=1, keepdim=True)  # [B, 1, H, W]
                 teacher_spatial = torch.mean(teacher_feat, dim=1, keepdim=True)  # [B, 1, H, W]
                 
@@ -204,9 +200,9 @@ def train(config):
             feature_loss = feature_matching_loss(student_features, teacher_features)
             
             # Combined loss with three components
-            loss = (config.alpha * distillation_loss +           # Output matching (70%)
-                   config.beta * feature_loss +                  # Feature matching (20%)
-                   (1 - config.alpha - config.beta) * original_loss)  # Original losses (10%)
+            loss = (config.alpha * distillation_loss +           
+                   config.beta * feature_loss +                  
+                   (1 - config.alpha - config.beta) * original_loss)
 
             optimizer.zero_grad()
             loss.backward()
@@ -226,7 +222,7 @@ def train(config):
                 print("Feature Loss:", feature_loss.item())
                 print("Original Loss:", original_loss.item())
                 
-        # Save model after each epoch
+        # Save model
         if not os.path.exists(config.snapshots_folder):
             os.mkdir(config.snapshots_folder)
             
