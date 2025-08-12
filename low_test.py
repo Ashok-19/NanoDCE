@@ -199,7 +199,7 @@ def lowlight(input_path, model_path, scale_factor, model_type, process_type='ima
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_path', type=str, default='data/test_data/', help='Input path (image/video or directory)')
-    parser.add_argument('--model_path', type=str, default='snapshots_Student_KD_both/Student_Final.pth', help='Path to model weights')
+    parser.add_argument('--model_path', type=str, default='snapshots_Student_KD/Student_Final.pth', help='Path to model weights')
     parser.add_argument('--model_type', type=str, default='student', choices=['student', 'teacher'], help='Model type')
     parser.add_argument('--scale_factor', type=int, default=12, help='Scale factor')
     parser.add_argument('--process_type', type=str, default='auto', choices=['image', 'video', 'auto'], help='Process type')

@@ -263,7 +263,7 @@ if __name__ == "__main__":
     parser.add_argument('--num_workers', type=int, default=4)
     parser.add_argument('--display_iter', type=int, default=10)
     parser.add_argument('--scale_factor', type=int, default=1)
-    parser.add_argument('--snapshots_folder', type=str, default="snapshots_Student_KD_both/")
+    parser.add_argument('--snapshots_folder', type=str, default="snapshots_Student_KD/")
     parser.add_argument('--load_pretrain_student', type=bool, default=False)
     parser.add_argument('--pretrain_student_dir', type=str, default="")
     parser.add_argument('--alpha', type=float, default=0.7, help='Weight for distillation loss')
