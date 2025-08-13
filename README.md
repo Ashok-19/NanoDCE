@@ -16,7 +16,7 @@ This project is about using Knowledge Distillation method to compress the alread
 - *Critical implication*: Prevents moving target problem; student learns from fixed knowledge source
 
 ### Logits
-Hard logits were used here instead of traditional soft logits with temperature control. The Reason for this change is , ZeroDCE outputs an enhanced image in which the values will be continuos.
+Hard logits were used here instead of traditional soft logits with temperature control. The Reason for this change is , ZeroDCE outputs an enhanced image in which the values will be continuous.
 Soft logits with temperature control is used for classification tasks which is not the case here. 
 - Student is made to match the teacher's output image pixel values.
 
