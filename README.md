@@ -186,6 +186,7 @@ Refer [model.py](https://github.com/Ashok-19/ZeroDCE_extension-KD/blob/a86b25440
 Instead of using the same 2002 samples provided in the original model's [training data](https://github.com/Li-Chongyi/Zero-DCE_extension/tree/09f202b690f82da939b8e6ec8535960ae97ad8bd/Zero-DCE%2B%2B/data), an additional amount of another 2231 samples were added to original training data from datasets such as LIME, DICM, LOL-v2 and LoLI-street to avoid overfitting.
 
 Access all training data and results [here](https://drive.google.com/drive/folders/1-NzPEyCqdU4PwIbRDre48vN4SttSlAfv?usp=sharing)
+It's recommended to add more training data for better results.
 
 Before training create folder structure like below
 
