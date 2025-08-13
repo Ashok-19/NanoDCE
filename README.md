@@ -13,7 +13,12 @@ This project is about using Knowledge Distillation method to compress the alread
 - Teacher network loaded from pre-trained weights and set to `eval()` mode  
 - **Completely frozen**: No parameter updates via `torch.no_grad()` during teacher inference  
 - Provides stable "soft targets" (enhanced images and illumination maps) as consistent learning references  
-- *Critical implication*: Prevents moving target problem; student learns from fixed knowledge source  
+- *Critical implication*: Prevents moving target problem; student learns from fixed knowledge source
+
+### Logits
+Hard logits were used here instead of traditional soft logits with temperature control. The Reason for this change is , ZeroDCE outputs an enhanced image in which the values will be continuos.
+Soft logits with temperature control is used for classification tasks which is not the case here. 
+- Student is made to match the teacher's output image pixel values.
 
 ### Feature Matching Mechanism  
 - **Targeted layers**: Intermediate features extracted from `e_conv2`, `e_conv4`, and `e_conv6` layers  
@@ -180,6 +185,7 @@ Refer [model.py](https://github.com/Ashok-19/ZeroDCE_extension-KD/blob/a86b25440
 
 Instead of using the same 2002 samples provided in the original model's [training data](https://github.com/Li-Chongyi/Zero-DCE_extension/tree/09f202b690f82da939b8e6ec8535960ae97ad8bd/Zero-DCE%2B%2B/data), an additional amount of another 2231 samples were added to original training data from datasets such as LIME, DICM, LOL-v2 and LoLI-street to avoid overfitting.
 
+Access all training data and results [here](https://drive.google.com/drive/folders/1-NzPEyCqdU4PwIbRDre48vN4SttSlAfv?usp=sharing)
 
 Before training create folder structure like below
 
