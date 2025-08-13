@@ -32,7 +32,8 @@ Total loss = `α × output_distillation + β × feature_matching + (1-α-β) × 
 
 ## Inference times
 
-This script will provide an approximate inference results but accurate one.
+This script will provide an approximate inference results but not an accurate one.
+
         python inference.py
 
 #### Sample Output
@@ -124,7 +125,30 @@ This script will provide an approximate inference results but accurate one.
         Teacher Webcam FPS: 168.42 (5.94 ms/frame)
         Student Webcam FPS: 191.34 (5.23 ms/frame)
         Webcam FPS Improvement: 1.14x faster
-        
+
+## Live Video Performance
+
+As for the live video performance, the latency for each frame is calculated and displayed.
+
+To check live video performance, run
+
+                #for student model
+        python live_webcam.py  
+
+                #for teacher model
+        python live_webcam.py --model_type=teacher --model_path=snapshots_Zero_DCE++/Epoch99.pth 
+
+
+* Performance
+  
+          Student | Teacher
+          --------|---------
+          11-14ms | 30-34 ms
+
+  Note: Live webcam performance may vary for each system, Here the system configs were,
+  * CPU - Ryzen 7 4800H
+  * GPU - RTX 3050
+          
 ## Changes
 
 Only Number of filter channels were changed -> from 32 to 4
