@@ -1,7 +1,7 @@
 
 # ZeroDCE_Extension-KD
 
-This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version.
+This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version resulting in more than 90% in model size reduction.
 
         Original Model - 10561 params
 
