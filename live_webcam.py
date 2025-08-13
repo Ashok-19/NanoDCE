@@ -115,9 +115,6 @@ class OptimizedWebcamProcessor:
                            (combined_frame.shape[1]//2 - 150, 30), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
                 
-                cv2.putText(combined_frame, f"Process: {current_fps:.1f}", 
-                           (10, combined_frame.shape[0] - 20), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
                 
                 cv2.putText(combined_frame, f"Model: {process_time*1000:.1f}ms", 
                            (combined_frame.shape[1]//2 - 50, combined_frame.shape[0] - 20), 
