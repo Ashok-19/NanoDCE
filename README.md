@@ -59,7 +59,7 @@ Note: YOLO detection is optional
   * GPU - RTX 3050
           
 
-Refer [model.py]() and [model_student.py]() for Changes
+Refer [model.py](https://github.com/Ashok-19/TinyDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model.py) and [model_student.py](https://github.com/Ashok-19/TinyDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model_student.py) for Changes
 
 ## Prerequisites
 
