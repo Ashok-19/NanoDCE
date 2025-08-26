@@ -17,16 +17,16 @@
 Teacher Model: Pre-trained Zero-DCE++ loaded and frozen. Provides stable references, preventing co-adaptation instabilities
 Student Model: Simplified architecture (see below).
 
-**Distillation Components**:
+### Distillation Components:
 
-_Output Alignment (Hard Logits)_: MSE on enhanced images and illumination maps. Hard logits are used (no temperature softening) as enhancement is a continuous regression task, unlike classification where softmax+temperature distills "dark knowledge"
+**_Output Alignment (Hard Logits)_**: MSE on enhanced images and illumination maps. Hard logits are used (no temperature softening) as enhancement is a continuous regression task, unlike classification where softmax+temperature distills "dark knowledge"
 
-_Perceptual (VGG-based)_ and _SSIM losses_ added for structural fidelity.
+**_Perceptual (VGG-based)_** and **_SSIM losses_** added for structural fidelity.
 Feature Matching: Extracts features from teacher's e_conv2, e_conv4, e_conv7 and aligns with student's corresponding layers (e_conv1 → e_conv2, etc.). Handles mismatches via adaptive pooling (spatial) and GAP (channels). Weighted by layer depth (0.2 early, 0.3 mid, 0.5 deep) to emphasize hierarchical knowledge transfer
 
-_Contrastive Loss_: Uses EMA teacher for negative samples, encouraging student to pull closer to fixed teacher while pushing away from its EMA version (inspired by BYOL/MoCo for stability).
+**_Contrastive Loss_**: Uses EMA teacher for negative samples, encouraging student to pull closer to fixed teacher while pushing away from its EMA version (inspired by BYOL/MoCo for stability).
 
-_Task-Specific Losses_: From Zero-DCE++ (color constancy, spatial consistency, TV smoothness, multi-region exposure) to maintain enhancement constraints.
+**_Task-Specific Losses_**: From Zero-DCE++ (color constancy, spatial consistency, TV smoothness, multi-region exposure) to maintain enhancement constraints.
 
 **Combined Loss**: 
         
