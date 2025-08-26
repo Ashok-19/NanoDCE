@@ -3,8 +3,8 @@ import torch.nn as nn
 import os
 import argparse
 import time
-import model
-import model_student
+import models.zerodce as zerodce
+import models.model_student as model_student
 import numpy as np
 import cv2
 
@@ -19,7 +19,7 @@ class OptimizedWebcamProcessor:
         if model_type == 'student':
             self.model_net = model_student.enhance_net_nopool_student(scale_factor).to(self.device)
         else:
-            self.model_net = model.enhance_net_nopool(scale_factor).to(self.device)
+            self.model_net = zerodce.enhance_net_nopool().to(self.device)
         
         self.model_net.load_state_dict(torch.load(model_path, map_location=self.device))
         self.model_net.eval()

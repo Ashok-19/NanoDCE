@@ -15,48 +15,43 @@ from torchvision import transforms
 from PIL import Image
 import glob
 import cv2
+import zerodce
 
 def process_image(image_path, model_path, scale_factor, model_type):
-    
+    # Ensure CUDA is used
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if not torch.cuda.is_available():
         print("WARNING: CUDA not available, falling back to CPU")
     
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     
-
     data_lowlight = Image.open(image_path)
     data_lowlight = (np.asarray(data_lowlight) / 255.0)
     
     data_lowlight = torch.from_numpy(data_lowlight).float()
     
-
-
     h = (data_lowlight.shape[0] // scale_factor) * scale_factor
     w = (data_lowlight.shape[1] // scale_factor) * scale_factor
     data_lowlight = data_lowlight[0:h, 0:w, :]
     data_lowlight = data_lowlight.permute(2, 0, 1)
-    data_lowlight = data_lowlight.to(device).unsqueeze(0)  
+    data_lowlight = data_lowlight.to(device).unsqueeze(0)  # Move to device
     
-
     # Initialize model
     if model_type == 'student':
-        DCE_net = model_student.enhance_net_nopool_student(scale_factor).to(device)  
-        DCE_net = model.enhance_net_nopool(scale_factor).to(device)  
+        DCE_net = model_student.enhance_net_nopool_student(scale_factor).to(device)  # Move to device
+    else:
+        #DCE_net = model.enhance_net_nopool(scale_factor).to(device)  # Move to device
+        DCE_net = zerodce.enhance_net_nopool().to(device)  # Move to device
     
-    DCE_net.load_state_dict(torch.load(model_path, map_location=device))  
-    DCE_net.eval() 
+    DCE_net.load_state_dict(torch.load(model_path, map_location=device))  # Load with device mapping
+    DCE_net.eval()  # Set to evaluation mode
     
-
-
     start = time.time()
     enhanced_image, params_maps = DCE_net(data_lowlight)
     end_time = (time.time() - start)
     
     print(f"Image processing time: {end_time:.4f} seconds")
     
-
-
     # Save result
     if model_type == 'student':
         result_path = image_path.replace('test_data', 'result_student')
@@ -66,30 +61,26 @@ def process_image(image_path, model_path, scale_factor, model_type):
     if not os.path.exists(result_path.replace('/' + result_path.split("/")[-1], '')):
         os.makedirs(result_path.replace('/' + result_path.split("/")[-1], ''))
     
-
-
     # Move tensor to CPU for saving
     torchvision.utils.save_image(enhanced_image.cpu(), result_path)
     return end_time
 
-
-
 def process_video(video_path, model_path, scale_factor, model_type, output_fps=None):
-    
+    # Ensure CUDA is used
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if not torch.cuda.is_available():
         print("WARNING: CUDA not available, falling back to CPU")
     
     os.environ['CUDA_VISIBLE_DEVICES'] = '0'
     
-
+    # Initialize model
     if model_type == 'student':
-        DCE_net = model_student.enhance_net_nopool_student(scale_factor).to(device) 
+        DCE_net = model_student.enhance_net_nopool_student(scale_factor).to(device)  # Move to device
     else:
-        DCE_net = model.enhance_net_nopool(scale_factor).to(device) 
+        DCE_net = zerodce.enhance_net_nopool().to(device)  # Move to device
     
-    DCE_net.load_state_dict(torch.load(model_path, map_location=device)) 
-    DCE_net.eval()  
+    DCE_net.load_state_dict(torch.load(model_path, map_location=device))  # Load with device mapping
+    DCE_net.eval()  # Set to evaluation mode
     
     # Open video
     cap = cv2.VideoCapture(video_path)
@@ -107,23 +98,17 @@ def process_video(video_path, model_path, scale_factor, model_type, output_fps=N
     h = (height // scale_factor) * scale_factor
     w = (width // scale_factor) * scale_factor
     
-
-
     # Create output video path
     if model_type == 'student':
         output_path = video_path.replace('test_data', 'result_student').replace('.mp4', '_enhanced.mp4')
     else:
         output_path = video_path.replace('test_data', 'result_teacher').replace('.mp4', '_enhanced.mp4')
     
-
-
     # Create output directory if it doesn't exist
     output_dir = os.path.dirname(output_path)
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
-
-
     # Initialize video writer
     fourcc = cv2.VideoWriter_fourcc(*'mp4v')
     out = cv2.VideoWriter(output_path, fourcc, output_fps, (w, h))
@@ -135,8 +120,6 @@ def process_video(video_path, model_path, scale_factor, model_type, output_fps=N
     frame_count = 0
     total_time = 0
     
-
-
     while True:
         ret, frame = cap.read()
         if not ret:
@@ -164,16 +147,16 @@ def process_video(video_path, model_path, scale_factor, model_type, output_fps=N
         # Convert back to numpy and save
         enhanced_frame = enhanced_frame.squeeze(0).permute(1, 2, 0)
         enhanced_frame = torch.clamp(enhanced_frame, 0, 1)
-        enhanced_frame_np = (enhanced_frame.cpu().numpy() * 255).astype(np.uint8)  
+        enhanced_frame_np = (enhanced_frame.cpu().numpy() * 255).astype(np.uint8)  # Move to CPU for conversion
         
         # Convert RGB back to BGR for OpenCV
         enhanced_frame_bgr = cv2.cvtColor(enhanced_frame_np, cv2.COLOR_RGB2BGR)
         out.write(enhanced_frame_bgr)
         
-        if frame_count % 30 == 0:
+        if frame_count % 30 == 0:  # Print progress every 30 frames
             print(f"Processed frame {frame_count}/{total_frames}, Time: {frame_time:.4f}s")
     
-    
+    # Release everything
     cap.release()
     out.release()
     
@@ -184,8 +167,6 @@ def process_video(video_path, model_path, scale_factor, model_type, output_fps=N
     
     return total_time
 
-
-
 def lowlight(input_path, model_path, scale_factor, model_type, process_type='image'):
     if process_type == 'image':
         return process_image(input_path, model_path, scale_factor, model_type)
@@ -194,20 +175,18 @@ def lowlight(input_path, model_path, scale_factor, model_type, process_type='ima
     else:
         raise ValueError("process_type must be 'image' or 'video'")
 
-
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--input_path', type=str, default='data/test_data/', help='Input path (image/video or directory)')
-    parser.add_argument('--model_path', type=str, default='snapshots_Student_KD/Student_Final.pth', help='Path to model weights')
+    parser.add_argument('--model_path', type=str, default='snapshots_Student_KD_both/Student_Epoch100.pth', help='Path to model weights')
     parser.add_argument('--model_type', type=str, default='student', choices=['student', 'teacher'], help='Model type')
-    parser.add_argument('--scale_factor', type=int, default=12, help='Scale factor')
+    parser.add_argument('--scale_factor', type=int, default=1, help='Scale factor')
     parser.add_argument('--process_type', type=str, default='auto', choices=['image', 'video', 'auto'], help='Process type')
     parser.add_argument('--output_fps', type=int, default=None, help='Output FPS for video (default: same as input)')
     
     args = parser.parse_args()
     
-   
+    # Check CUDA availability
     if not torch.cuda.is_available():
         print("ERROR: CUDA is not available. Please check your CUDA installation.")
         sys.exit(1)
@@ -215,7 +194,7 @@ if __name__ == '__main__':
     print(f"Using device: CUDA")
     
     with torch.no_grad():
-        
+        # Check if input is a file or directory
         if os.path.isfile(args.input_path):
             # Single file processing
             file_ext = os.path.splitext(args.input_path)[1].lower()
@@ -248,7 +227,7 @@ if __name__ == '__main__':
                         elif file_ext in ['.jpg', '.jpeg', '.png', '.bmp', '.tiff', '.tif']:
                             process_type = 'image'
                         else:
-                            continue  
+                            continue  # Skip unsupported files
                     else:
                         process_type = args.process_type
                     

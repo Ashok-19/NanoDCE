@@ -8,7 +8,7 @@ import cv2
 import os
 
 def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), num_warmup=20, num_iterations=100):
-    '''
+    """
     Benchmark model inference time and FPS
     
     Args:
@@ -22,23 +22,23 @@ def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), nu
         avg_time: Average inference time in milliseconds
         fps: Frames per second
         std_time: Standard deviation of inference time
-    '''
+    """
     model_net.eval()
     
-    
+    # Create random input tensor
     dummy_input = torch.randn(input_size).to(device)
     
-    # Warmup 
+    # Warmup iterations
     print(f"Warming up for {num_warmup} iterations...")
     with torch.no_grad():
         for _ in range(num_warmup):
             _ = model_net(dummy_input)
     
-    
+    # Synchronize CUDA
     if device.type == 'cuda':
         torch.cuda.synchronize()
     
-    
+    # Timing iterations
     times = []
     print(f"Running benchmark for {num_iterations} iterations...")
     
@@ -56,7 +56,7 @@ def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), nu
             end_time = time.time()
             times.append((end_time - start_time) * 1000)  # Convert to milliseconds
             
-            
+            # Progress indicator
             if (i + 1) % 20 == 0:
                 print(f"Completed {i + 1}/{num_iterations} iterations")
     
@@ -67,23 +67,36 @@ def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), nu
     return avg_time, fps, std_time
 
 def benchmark_webcam_fps(model_net, device, camera_index=0, test_duration=10, scale_factor=1):
-
+    """
+    Benchmark actual webcam processing FPS
+    
+    Args:
+        model_net: PyTorch model
+        device: CUDA device
+        camera_index: Webcam index
+        test_duration: Duration to test in seconds
+        scale_factor: Scale factor for processing
+    
+    Returns:
+        actual_fps: Actual processing FPS
+        avg_process_time: Average time per frame
+    """
     print("Testing actual webcam processing FPS...")
     
-    
+    # Initialize webcam
     cap = cv2.VideoCapture(camera_index)
     
     if not cap.isOpened():
         print("Warning: Could not open webcam for actual FPS test")
         return None, None
     
-    
+    # Get webcam properties
     width = int(cap.get(cv2.CAP_PROP_FRAME_WIDTH))
     height = int(cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
     
     print(f"Webcam resolution: {width}x{height}")
     
-    
+    # Calculate processing dimensions
     h = (height // scale_factor) * scale_factor
     w = (width // scale_factor) * scale_factor
     
@@ -96,6 +109,7 @@ def benchmark_webcam_fps(model_net, device, camera_index=0, test_duration=10, sc
             if not ret:
                 break
             
+            # Process frame
             start_time = time.time()
             
             # Resize frame if necessary
@@ -117,7 +131,7 @@ def benchmark_webcam_fps(model_net, device, camera_index=0, test_duration=10, sc
                 _, _ = model_net(frame_tensor)
             
             end_time = time.time()
-            frame_times.append((end_time - start_time) * 1000) 
+            frame_times.append((end_time - start_time) * 1000)  # Convert to milliseconds
             
     except Exception as e:
         print(f"Error during webcam test: {e}")
@@ -132,13 +146,13 @@ def benchmark_webcam_fps(model_net, device, camera_index=0, test_duration=10, sc
         return None, None
 
 def count_model_parameters(model_net):
-    
+    """Count total and trainable parameters"""
     total_params = sum(p.numel() for p in model_net.parameters())
     trainable_params = sum(p.numel() for p in model_net.parameters() if p.requires_grad)
     return total_params, trainable_params
 
 def get_model_size_mb(model_net):
-    
+    """Get model size in MB"""
     param_size = 0
     for param in model_net.parameters():
         param_size += param.nelement() * param.element_size()
@@ -151,8 +165,10 @@ def get_model_size_mb(model_net):
     return size_mb
 
 def benchmark_models_comprehensive(teacher_model_path, student_model_path, scale_factor=1):
-    
-    
+    """
+    Comprehensive benchmark of both models
+    """
+    # Setup device
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     if not torch.cuda.is_available():
         print("ERROR: CUDA not available. Benchmarks require GPU.")
@@ -167,7 +183,8 @@ def benchmark_models_comprehensive(teacher_model_path, student_model_path, scale
     test_sizes = [
         (1, 3, 256, 256),
         (1, 3, 512, 512),
-        (1, 3, 1024, 1024)
+        (1, 3, 1024, 1024),
+        (1,3,3840,2160)
     ]
     
     results = {}
@@ -176,8 +193,10 @@ def benchmark_models_comprehensive(teacher_model_path, student_model_path, scale
     print("\n" + "-" * 40)
     print("BENCHMARKING TEACHER MODEL")
     print("-" * 40)
+    import zerodce
     
-    teacher_net = model.enhance_net_nopool(scale_factor).to(device)
+    teacher_net = zerodce.enhance_net_nopool().to(device)
+    #teacher_net = model.enhance_net_nopool(scale_factor).to(device)
     teacher_net.load_state_dict(torch.load(teacher_model_path, map_location=device))
     teacher_net.eval()
     
@@ -311,9 +330,9 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Comprehensive benchmark of teacher and student models')
-    parser.add_argument('--teacher_path', type=str, default='snapshots_Zero_DCE++/Epoch99.pth',
+    parser.add_argument('--teacher_path', type=str, default='snapshots_Zero_DCE++/Epoch-99_pre.pth',
                        help='Path to teacher model weights')
-    parser.add_argument('--student_path', type=str, default='snapshots_Student_KD/Student_Final.pth',
+    parser.add_argument('--student_path', type=str, default='snapshots_Student_KD_both/Student_Epoch3.pth',
                        help='Path to student model weights')
     parser.add_argument('--scale_factor', type=int, default=1,
                        help='Scale factor for models')
