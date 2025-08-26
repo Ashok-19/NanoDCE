@@ -14,7 +14,7 @@ This project is about using Knowledge Distillation method to compress the alread
 ## Architectural Changes
 The student retains Zero-DCE++'s core (curve estimation via iterative LE maps) but compresses aggressively:
 
-_Filter Channels_: Reduced from 32 to 4 (via scale_factor).
+_Filter Channels_: Reduced from 32 to 4.
 _Convolutional Layers_: From 7 (Zero-DCE++) to 3 (each Depthwise + Pointwise as one logical conv).
 _Curve Iterations_: From 8 to 4, trading some dynamic range for efficiency.
 _Implication_: Preserves U-Net-like skip connections but trims depth, relying on KD to recover lost capacity.
