@@ -7,15 +7,15 @@ import os
 import sys
 import argparse
 import time
-import dataloader
+import dataloader.dataloader as dataloader
 import model
-import model_student
+import models.model_student as model_student
 import numpy as np
 from torchvision import transforms
 from PIL import Image
 import glob
 import cv2
-import zerodce
+import models.zerodce as zerodce
 
 def process_image(image_path, model_path, scale_factor, model_type):
     # Ensure CUDA is used

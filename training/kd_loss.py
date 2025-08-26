@@ -1,4 +1,7 @@
 from torchmetrics.functional import structural_similarity_index_measure
+import torch
+import torch.functional
+import torch.nn as nn
 
 
 def feature_matching_loss(student_features, teacher_features):

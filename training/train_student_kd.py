@@ -1,4 +1,4 @@
-# teacher.py (Enhanced Knowledge Distillation Pipeline - Fixed)
+
 import torch
 import torch.nn as nn
 import torch.optim
@@ -6,19 +6,22 @@ import torch.optim
 import torch.optim.lr_scheduler as lr_scheduler
 import os
 import argparse
-import dataloader
-import zerodce
-import model_student
+import dataloader.dataloader as dataloader
+import models.model as zerodce_ext
+import models.model_student as model_student
 import Myloss
 import numpy as np
-from torchvision import transforms
+
 import shutil
 import json
 import torch.nn.functional as F
 import random
 import copy
-import kd_loss
-import Feature_extractor
+import training.kd_loss as kd_loss
+import training.Feature_extractor as Feature_extractor
+
+
+
 def weights_init(m):
     classname = m.__class__.__name__
     if classname.find('Conv') != -1:
@@ -59,7 +62,7 @@ def train_single_config(config, alpha, beta, run_name):
         os.makedirs(run_snapshots_folder)
 
     # Initialize Teacher Model (ZeroDCE)
-    teacher_net = zerodce.enhance_net_nopool().cuda()
+    teacher_net = zerodce_ext.enhance_net_nopool(config.scale_factor).cuda()
     teacher_net.load_state_dict(torch.load(config.teacher_model_path))
     teacher_net.eval()
 
@@ -578,7 +581,7 @@ if __name__ == "__main__":
 
     # Input Parameters
     parser.add_argument('--lowlight_images_path', type=str, default="data/lolv2/")
-    parser.add_argument('--teacher_model_path', type=str, default="snapshots_Zero_DCE++/zerodce.pth")
+    parser.add_argument('--teacher_model_path', type=str, default="snapshots_Zero_DCE++/zerodce_ext.pth")
     parser.add_argument('--lr', type=float, default=0.01)
     parser.add_argument('--weight_decay', type=float, default=0.0001)
     parser.add_argument('--grad_clip_norm', type=float, default=0.1)
