@@ -2,27 +2,12 @@ import torch
 import torch.nn as nn
 import time
 import numpy as np
-import model
-import model_student
+import models.model_student as model_student
 import cv2
 import os
-
+import models.model as zerodce_ext
 def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), num_warmup=20, num_iterations=100):
-    """
-    Benchmark model inference time and FPS
-    
-    Args:
-        model_net: PyTorch model
-        device: CUDA device
-        input_size: Input tensor size
-        num_warmup: Warmup iterations
-        num_iterations: Benchmark iterations
-    
-    Returns:
-        avg_time: Average inference time in milliseconds
-        fps: Frames per second
-        std_time: Standard deviation of inference time
-    """
+
     model_net.eval()
     
     # Create random input tensor
@@ -67,20 +52,7 @@ def benchmark_model_inference(model_net, device, input_size=(1, 3, 512, 512), nu
     return avg_time, fps, std_time
 
 def benchmark_webcam_fps(model_net, device, camera_index=0, test_duration=10, scale_factor=1):
-    """
-    Benchmark actual webcam processing FPS
-    
-    Args:
-        model_net: PyTorch model
-        device: CUDA device
-        camera_index: Webcam index
-        test_duration: Duration to test in seconds
-        scale_factor: Scale factor for processing
-    
-    Returns:
-        actual_fps: Actual processing FPS
-        avg_process_time: Average time per frame
-    """
+
     print("Testing actual webcam processing FPS...")
     
     # Initialize webcam
@@ -193,10 +165,9 @@ def benchmark_models_comprehensive(teacher_model_path, student_model_path, scale
     print("\n" + "-" * 40)
     print("BENCHMARKING TEACHER MODEL")
     print("-" * 40)
-    import zerodce
+
     
-    teacher_net = zerodce.enhance_net_nopool().to(device)
-    #teacher_net = model.enhance_net_nopool(scale_factor).to(device)
+    teacher_net = zerodce_ext.enhance_net_nopool(scale_factor).to(device)
     teacher_net.load_state_dict(torch.load(teacher_model_path, map_location=device))
     teacher_net.eval()
     
