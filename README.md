@@ -8,7 +8,7 @@ This project is about using Knowledge Distillation method to compress the alread
         ZeroDCE   - 79416 params
         ZeroDCE++ - 10561 params
 
-        TinyDCE   - 161 params (Ours)
+        TinyDCE   - 161 params (Proposed)
 
 ## Knowledge Distillation Training Method- visit [here](https://github.com/Ashok-19/TinyDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
 
