@@ -1,13 +1,14 @@
 
 # ZeroDCE_Extension-KD
 
-This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version resulting in more than 90% in model size reduction.
+This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version resulting in 98.5% (65.6x) smaller than ZeroDCE++ and 99.8% (493.3x) smaller than ZeroDCE while retaining similar results.
 
-        Original Model - 10561 params
+        ZeroDCE   - 79416 params
+        ZeroDCE++ - 10561 params
 
-        Proposed Model - 565 params
+        TinyDCE   - 161 params
 
-## Knowledge Distillation in ZeroDCE++ Implementation  
+## Knowledge Distillation in ZeroDCE++ Implementation
 
 ### Fixed Teacher Model  
 - Teacher network loaded from pre-trained weights and set to `eval()` mode  
