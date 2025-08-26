@@ -30,7 +30,7 @@ Feature Matching: Extracts features from teacher's e_conv2, e_conv4, e_conv7 and
 
 **Combined Loss**: 
         
-        _α × distillation + β × feature_matching + (1 - α - β) × task_losses + contrastive_.
+        _α × distillation + β × feature_matching + (1 - α - β) × task_losses + contrastive_loss
 
         _Defaults_: α=0.3–0.4, β=0.1 (tuned via grid search to balance mimicry and independence).
 
