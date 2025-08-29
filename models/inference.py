@@ -301,9 +301,9 @@ if __name__ == "__main__":
     import argparse
     
     parser = argparse.ArgumentParser(description='Comprehensive benchmark of teacher and student models')
-    parser.add_argument('--teacher_path', type=str, default='snapshots_Zero_DCE++/Epoch-99_pre.pth',
+    parser.add_argument('--teacher_path', type=str, default='snapshots_Zero_DCE++/Epoch99.pth',
                        help='Path to teacher model weights')
-    parser.add_argument('--student_path', type=str, default='snapshots_Student_KD_both/Student_Epoch3.pth',
+    parser.add_argument('--student_path', type=str, default='snapshots_Student_KD_both/Student_Epoch100.pth',
                        help='Path to student model weights')
     parser.add_argument('--scale_factor', type=int, default=1,
                        help='Scale factor for models')
