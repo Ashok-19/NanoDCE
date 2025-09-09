@@ -6,7 +6,6 @@ import torch.nn as nn
 
 def feature_matching_loss(student_features, teacher_features):
     mse_loss = nn.MSELoss()
-    # Initialize feature_loss as a PyTorch tensor on the same device as inputs
     device = next(iter(student_features.values())).device if student_features else torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     feature_loss = torch.tensor(0.0, device=device)
 
@@ -20,7 +19,6 @@ def feature_matching_loss(student_features, teacher_features):
     computed_any_loss = False
     # Iterate through student features
     for student_feature_key, student_feat in student_features.items():
-        # Parse the student feature key
         if student_feature_key.startswith("student_") and "_matches_teacher_" in student_feature_key:
             parts = student_feature_key.split("_matches_teacher_")
             if len(parts) == 2:
@@ -71,14 +69,13 @@ def knowledge_distillation_loss(student_output, teacher_output, vgg_perceptual_l
     # Base pixel loss
     pixel_loss = mse_loss(student_output[0], teacher_output[0])
     
-    # VGG perceptual loss (weight 0.1 as suggested in research)
+    # VGG perceptual loss
     if vgg_perceptual_loss is not None:
         vgg_loss = vgg_perceptual_loss(student_output[0], teacher_output[0]) * 0.1
     else:
         vgg_loss = 0.0
     
-    # SSIM loss (weight 0.05 as suggested in research) - using PyTorch's built-in
+    # SSIM loss
     ssim_loss = (1 - structural_similarity_index_measure(student_output[0], teacher_output[0])) * 0.05
-    
-    # Combined loss components
+
     return pixel_loss + vgg_loss + ssim_loss

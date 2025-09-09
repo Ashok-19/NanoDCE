@@ -38,8 +38,7 @@ class OptimizedWebcamProcessor:
         # Calculate processing dimensions
         self.proc_h = (self.height // scale_factor) * scale_factor
         self.proc_w = (self.width // scale_factor) * scale_factor
-        
-        # Pre-allocate tensors to avoid memory allocation in loop
+
         self.input_tensor = torch.zeros(1, 3, self.proc_h, self.proc_w, device=self.device)
         
         # Create output buffer
@@ -50,34 +49,27 @@ class OptimizedWebcamProcessor:
     
     def process_frame_optimized(self, frame):
         
-        # Resize once (if needed)
+
         if self.proc_h != self.height or self.proc_w != self.width:
             frame = cv2.resize(frame, (self.proc_w, self.proc_h))
-        
-        # Convert BGR to RGB and normalize in one step
+
         frame_rgb = frame[:, :, ::-1]  
         frame_normalized = frame_rgb.astype(np.float32) / 255.0
         
-        # Copy to pre-allocated tensor (avoids memory allocation)
         self.input_tensor[0].copy_(torch.from_numpy(frame_normalized).permute(2, 0, 1).to(self.device))
         
-        # Process frame (GPU only)
         with torch.no_grad():
             enhanced_tensor, _ = self.model_net(self.input_tensor)
         
-        # Convert back to numpy in one step
         enhanced_np = enhanced_tensor[0].permute(1, 2, 0).clamp(0, 1).mul(255).byte().cpu().numpy()
         
-        # Convert RGB to BGR
-        enhanced_bgr = enhanced_np[:, :, ::-1]  # RGB to BGR using slicing
-        
+        enhanced_bgr = enhanced_np[:, :, ::-1]  
         return enhanced_bgr
     
     def run(self):
         frame_count = 0
         fps_counter_start = time.time()
         frame_counter = 0
-        current_fps = 0
         fullscreen = False
         
         try:
@@ -89,28 +81,23 @@ class OptimizedWebcamProcessor:
                 frame_count += 1
                 frame_counter += 1
                 
-                # Calculate FPS
                 if frame_counter >= 30:
                     elapsed_time = time.time() - fps_counter_start
                     current_fps = frame_counter / elapsed_time
                     fps_counter_start = time.time()
                     frame_counter = 0
                 
-                # Process frame
                 start_process = time.time()
                 processed_frame = self.process_frame_optimized(frame)
                 process_time = time.time() - start_process
                 
-                # Combine frames side by side
                 combined_frame = np.hstack((frame, processed_frame))
                 
-                # Add labels and FPS
                 cv2.putText(combined_frame, 'Original', (10, 30), 
                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 cv2.putText(combined_frame, 'Enhanced', (frame.shape[1] + 10, 30), 
                            cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 0), 2)
                 
-                # Display all FPS info
                 cv2.putText(combined_frame, f"Webcam: {self.webcam_fps:.1f}", 
                            (combined_frame.shape[1]//2 - 150, 30), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 0, 0), 2)
@@ -120,14 +107,12 @@ class OptimizedWebcamProcessor:
                            (combined_frame.shape[1]//2 - 50, combined_frame.shape[0] - 20), 
                            cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 0), 2)
                 
-                # Display frame
                 if fullscreen:
                     cv2.namedWindow('Live Light Enhancement', cv2.WND_PROP_FULLSCREEN)
                     cv2.setWindowProperty('Live Light Enhancement', cv2.WND_PROP_FULLSCREEN, cv2.WINDOW_FULLSCREEN)
                 
                 cv2.imshow('Live Light Enhancement', combined_frame)
                 
-                # Handle key presses
                 key = cv2.waitKey(1) & 0xFF
                 if key == ord('q') or key == 27:
                     break
@@ -141,7 +126,7 @@ class OptimizedWebcamProcessor:
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--model_path', type=str, default='snapshots_Student_KD/Student_Final.pth')
+    parser.add_argument('--model_path', type=str, default='snapshots_student_enhanced_kd/Student_Epoch100.pth')
     parser.add_argument('--model_type', type=str, default='student', choices=['student', 'teacher'])
     parser.add_argument('--scale_factor', type=int, default=1)
     parser.add_argument('--camera_index', type=int, default=0)

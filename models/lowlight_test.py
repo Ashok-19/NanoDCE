@@ -1,8 +1,6 @@
-# test.py (Updated with BRISQUE)
 import torch
 import torch.nn as nn
 import torchvision
-# Explicitly import transforms
 from torchvision import transforms 
 import os
 import argparse
@@ -10,35 +8,26 @@ import numpy as np
 from PIL import Image, ImageDraw, ImageFont
 import glob
 import time
-import model  # Teacher model definition (zerodce++)
-import model_student  # Student model definition
-# --- Import OpenCV for BRISQUE ---
+import model  
+import model_student  
 import cv2 
 from brisque.brisque import BRISQUE
-# --- Define transforms globally ---
+
 to_pil = transforms.ToPILImage()
 to_tensor = transforms.ToTensor()
 
-# --- NEW FUNCTION: Calculate BRISQUE Score ---
+
 def calculate_brisque_score(image_tensor):
-    """
-    Calculates the BRISQUE score for a PyTorch image tensor.
-    Lower BRISQUE scores generally indicate better perceived image quality.
-    Input: [B, C, H, W] tensor (values 0-1)
-    Output: BRISQUE score (float) or None if calculation fails.
-    """
+
     try:
-        # Ensure the tensor is on the CPU for OpenCV processing
         image_tensor_cpu = image_tensor.detach().cpu()
 
-        # Handle batch dimension: assume batch size 1 or squeeze if possible
         if image_tensor_cpu.shape[0] == 1:
             image_tensor_cpu = image_tensor_cpu.squeeze(0) # [C, H, W]
         elif image_tensor_cpu.dim() == 4:
              print("Warning: BRISQUE calculation expects batch size 1. Using first image.")
              image_tensor_cpu = image_tensor_cpu[0] # Take first image [C, H, W]
 
-        # Convert from [C, H, W] tensor (0-1) to HWC NumPy array (0-255, uint8)
         # Permute channels: [C, H, W] -> [H, W, C]
         image_np = image_tensor_cpu.permute(1, 2, 0).numpy()
         ndarray = np.asarray(image_np)
@@ -50,41 +39,33 @@ def calculate_brisque_score(image_tensor):
 
     except Exception as e:
         print(f"Error calculating BRISQUE score: {e}")
-        # Return None to indicate failure
+
         return None
-# --- END NEW FUNCTION ---
 
 def add_text_to_image(image_tensor, text_lines, font_size=20):
-    """
-    Adds multiple lines of text to a PyTorch tensor image.
-    """
-    # Convert tensor to PIL Image using the globally defined transform
-    # Ensure tensor is on CPU for PIL conversion
+
     image_tensor_cpu = image_tensor.cpu() 
     image_pil = to_pil(image_tensor_cpu.squeeze(0)) # Remove batch dim
-    
-    # Prepare drawing context
+
     draw = ImageDraw.Draw(image_pil)
     
-    # Try to load a default font, fallback to default if not found
+
     try:
-        # Adjust path or font name as needed for your system
         font = ImageFont.truetype("DejaVuSans.ttf", font_size) 
-    except OSError: # Catch specific error for file not found
+    except OSError: 
         try:
-            # Try another common one
             font = ImageFont.truetype("arial.ttf", font_size)
         except OSError:
-            # Fallback to default font if specific fonts are not found
+
             print("Warning: Specific font not found, using default.")
             font = ImageFont.load_default()
         
     text = "\n".join(text_lines)
     
-    # Position text (e.g., top-left corner with a small margin)
+
     x, y = 10, 10
     
-    # Draw text (white text with a slight black outline for better visibility)
+    # Draw text
     draw.text((x-1, y-1), text, font=font, fill="black")
     draw.text((x+1, y-1), text, font=font, fill="black")
     draw.text((x-1, y+1), text, font=font, fill="black")
@@ -92,8 +73,6 @@ def add_text_to_image(image_tensor, text_lines, font_size=20):
     # Draw main text
     draw.text((x, y), text, font=font, fill="white")
 
-    # Convert back to tensor using the globally defined transform
-    # Ensure the PIL image is in RGB mode if the tensor was 3-channel
     if image_pil.mode != 'RGB' and image_tensor_cpu.shape[1] == 3:
         image_pil = image_pil.convert('RGB')
     image_tensor_result = to_tensor(image_pil).unsqueeze(0).to(image_tensor.device) # Re-add batch dim and move to original device
@@ -110,43 +89,40 @@ def lowlight(image_path, teacher_net, student_net, scale_factor):
         
     data_lowlight = (np.asarray(data_lowlight) / 255.0)
     data_lowlight = torch.from_numpy(data_lowlight).float()
-    
-    # Ensure dimensions are divisible by scale_factor
+
     h = (data_lowlight.shape[0] // scale_factor) * scale_factor
     w = (data_lowlight.shape[1] // scale_factor) * scale_factor
     data_lowlight = data_lowlight[0:h, 0:w, :]
     data_lowlight = data_lowlight.permute(2, 0, 1)
-    data_lowlight = data_lowlight.cuda().unsqueeze(0) # Add batch dimension
+    data_lowlight = data_lowlight.cuda().unsqueeze(0) 
 
-    # --- Teacher Inference ---
     teacher_net.eval()
     with torch.no_grad():
         start_teacher = time.time()
         teacher_output = teacher_net(data_lowlight)
         if isinstance(teacher_output, tuple):
-            enhanced_teacher = teacher_output[0] # Assume first is image
+            enhanced_teacher = teacher_output[0]
         else:
-            enhanced_teacher = teacher_output # Assume single output is image
+            enhanced_teacher = teacher_output 
         end_time_teacher = time.time() - start_teacher
         
-        # --- Estimate BRISQUE score for teacher output ---
+
         brisque_teacher = calculate_brisque_score(enhanced_teacher)
 
-    # --- Student Inference ---
+    # Student Inference 
     student_net.eval()
     with torch.no_grad():
         start_student = time.time()
         student_output = student_net(data_lowlight)
         if isinstance(student_output, tuple):
-            enhanced_student = student_output[0] # Assume first is image
+            enhanced_student = student_output[0]
         else:
-            enhanced_student = student_output # Assume single output is image
+            enhanced_student = student_output 
         end_time_student = time.time() - start_student
         
-        # --- Estimate BRISQUE score for student output ---
+
         brisque_student = calculate_brisque_score(enhanced_student)
 
-    # --- Prepare Output Paths ---
     base_name = os.path.splitext(os.path.basename(image_path))[0]
     base_result_dir = image_path.replace('test_data', 'result_comparison')
     base_result_dir = os.path.dirname(base_result_dir) 
@@ -156,8 +132,6 @@ def lowlight(image_path, teacher_net, student_net, scale_factor):
 
     os.makedirs(base_result_dir, exist_ok=True)
 
-    # --- Annotate and Save Teacher Result ---
-    # --- Updated text lines for BRISQUE ---
     teacher_text_lines = [
         f"Model: Teacher (ZeroDCE++)",
         f"Inference Time: {end_time_teacher:.4f}s",
@@ -175,8 +149,6 @@ def lowlight(image_path, teacher_net, student_net, scale_factor):
         except:
             print("Failed to save Teacher result.")
 
-    # --- Annotate and Save Student Result ---
-    # --- Updated text lines for BRISQUE ---
     student_text_lines = [
         f"Model: Student (KD)",
         f"Inference Time: {end_time_student:.4f}s",
@@ -194,14 +166,13 @@ def lowlight(image_path, teacher_net, student_net, scale_factor):
         except:
              print("Failed to save Student result.")
 
-    # --- Return BRISQUE scores instead of Laplacian variance ---
     return end_time_teacher, end_time_student, brisque_teacher, brisque_student 
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--scale_factor', type=int, default=1, help='Scale factor for the models')
-    parser.add_argument('--teacher_model_path', type=str, default='snapshots_Zero_DCE++/Epoch-99_pre.pth', help='Path to the teacher model weights')
-    parser.add_argument('--student_model_path', type=str, default='snapshots_Student_KD_both/Student_Epoch3.pth', help='Path to the student model weights')
+    parser.add_argument('--teacher_model_path', type=str, default='snapshots_Zero_DCE++/Epoch99.pth', help='Path to the teacher model weights')
+    parser.add_argument('--student_model_path', type=str, default='snapshots_student_enhanced_kd/Student_Epoch100.pth', help='Path to the student model weights')
     parser.add_argument('--test_data',type=str, default='data/test_data/',help='Path to Test data')
     args = parser.parse_args()
 
@@ -217,25 +188,21 @@ if __name__ == '__main__':
         exit()
 
     print("Loading Teacher Model...")
-    # --- Corrected Teacher Model Instantiation ---
-    # Use zerodce.enhance_net_nopool() as per your training setup
-    #teacher_net = zerodce.enhance_net_nopool().cuda() 
-    teacher_net = model.enhance_net_nopool(scale_factor).cuda() # Commented out
+
+    teacher_net = model.enhance_net_nopool(scale_factor).cuda()
     teacher_net.load_state_dict(torch.load(teacher_model_path))
     print("Teacher Model loaded.")
 
     print("Loading Student Model...")
-    # --- Corrected Student Model Instantiation ---
-    # Use the 4-conv student model class name you defined
     student_net = model_student.enhance_net_nopool_student(scale_factor).cuda() 
-    #student_net = model.enhance_net_nopool(scale_factor).cuda() # Commented out
+
     student_net.load_state_dict(torch.load(student_model_path))
     print("Student Model loaded.")
 
     filePath = args.test_data
     sum_time_teacher = 0
     sum_time_student = 0
-    # --- Updated lists to store BRISQUE scores ---
+
     all_brisque_teacher = [] 
     all_brisque_student = []
 
@@ -261,11 +228,10 @@ if __name__ == '__main__':
         if image_path.lower().endswith(('.png', '.jpg', '.jpeg', '.bmp', '.tif', '.tiff')):
             print(f"\nProcessing: {image_path}")
             try:
-                # --- Updated variable names to reflect BRISQUE ---
+
                 t_time, s_time, b_t, b_s = lowlight(image_path, teacher_net, student_net, scale_factor)
                 sum_time_teacher += t_time
                 sum_time_student += s_time
-                # --- Append BRISQUE scores, handling potential None values ---
                 if b_t is not None:
                     all_brisque_teacher.append(b_t)
                 else:
@@ -281,12 +247,11 @@ if __name__ == '__main__':
         else:
             print(f"Skipping non-image file: {image_path}")
 
-    # --- Print Summary using BRISQUE ---
-    # --- Updated variable names and messages ---
-    num_images_processed = len(all_brisque_teacher) # Should match len(all_brisque_student) for successful ones
-    num_images_attempted = len(test_image_paths) # Total images attempted
+
+    num_images_processed = len(all_brisque_teacher)
+    num_images_attempted = len(test_image_paths)
     if num_images_processed > 0:
-        avg_time_teacher = sum_time_teacher / num_images_attempted # Average time over all attempted images
+        avg_time_teacher = sum_time_teacher / num_images_attempted
         avg_time_student = sum_time_student / num_images_attempted
         avg_brisque_teacher = np.mean(all_brisque_teacher)
         avg_brisque_student = np.mean(all_brisque_student)
@@ -302,8 +267,7 @@ if __name__ == '__main__':
         print(f"  Teacher: {avg_brisque_teacher:.2f} (+/- {std_brisque_teacher:.2f})")
         print(f"  Student: {avg_brisque_student:.2f} (+/- {std_brisque_student:.2f})")
 
-        # --- Simple comparison based on BRISQUE ---
-        # Note: Lower BRISQUE score indicates better perceived quality.
+  
         if avg_brisque_student < avg_brisque_teacher:
              diff_percent = ((avg_brisque_teacher - avg_brisque_student) / avg_brisque_teacher) * 100
              print(f"\nStudent model produced outputs estimated to have {diff_percent:.2f}% better quality (lower BRISQUE) on average.")

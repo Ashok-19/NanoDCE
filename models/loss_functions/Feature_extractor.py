@@ -5,11 +5,11 @@ class FeatureExtractor:
         self.features = {}
         self.hooks = []
         if self.is_student:
-            # CORRECTED MAPPING FOR YOUR 3-LAYER STUDENT
+
             self.target_layers = {
-                'e_conv1': 'e_conv2',  # Student's 1st layer → Teacher's 2nd layer
-                'e_conv2': 'e_conv4',  # Student's 2nd layer → Teacher's 4th layer
-                'e_conv3': 'e_conv7'   # Student's 3rd layer → Teacher's final layer
+                'e_conv1': 'e_conv2',  # Student's 1st layer -> Teacher's 2nd layer
+                'e_conv2': 'e_conv4',  # Student's 2nd layer -> Teacher's 4th layer
+                'e_conv3': 'e_conv7'   # Student's 3rd layer -> Teacher's final layer
             }
         else: # Teacher model
             self.target_layers = {

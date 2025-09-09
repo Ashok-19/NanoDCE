@@ -41,10 +41,10 @@ As for the live video performance, the latency for each frame is calculated and 
 To check live video performance, run
 
                 #for student model
-        python live_webcam.py  --model_path=../training/snapshots_student_enhanced_kd/Student_Epoch100.pth  --enable_detection
+        python live_webcam.py --model_path=snapshots_student_enhanced_kd/Student_Epoch100.pth  --enable_detection
 
                 #for teacher model
-        python live_webcam.py --model_type=teacher --model_path=../training/snapshots_Zero_DCE++/Epoch99-pre.pth  --enable_detection
+        python live_webcam.py --model_type=teacher --model_path=snapshots_Zero_DCE++/Epoch99-pre.pth  --enable_detection
 
 Note: YOLO detection is optional
 
@@ -89,12 +89,15 @@ To train the student model, use
 
 To test the student model, use
 
-        python low_test.py --input_path=<path_to_image_folder/image or video> --process_type=<image/video> --model_path=<> --model_type=<teacher/student>
+        python lowlight_test.py --test_data=<> --student_model_path=<> --teacher_model_path=<>
 
 
 ## Model size comparison
 
 Refer [Param_check.ipynb]()
+
+## FPGA Implementation
+To be updated...
 
 ## Results
 

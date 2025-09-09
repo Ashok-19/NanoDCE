@@ -1,10 +1,18 @@
-# model_student.py (Corrected)
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
 import math
 import numpy as np
 
+''' NanoDCE model definition
+
+        3 conv layers with 4 filter channels for each conv layer
+
+        4 LE curve iterations instead of 8
+'''
+
+
+#Conv layer architecture same as ZeroDCE++
 class CSDN_Tem(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(CSDN_Tem, self).__init__()
@@ -30,7 +38,7 @@ class CSDN_Tem(nn.Module):
         out = self.point_conv(out)
         return out
 
-class enhance_net_nopool_student(nn.Module): # Renamed for clarity
+class enhance_net_nopool_student(nn.Module):
 
     def __init__(self, scale_factor):
         super(enhance_net_nopool_student, self).__init__()
@@ -38,8 +46,7 @@ class enhance_net_nopool_student(nn.Module): # Renamed for clarity
         self.relu = nn.ReLU(inplace=True)
         self.scale_factor = scale_factor
         self.upsample = nn.UpsamplingBilinear2d(scale_factor=self.scale_factor)
-        number_f = 4  # Keep the reduced channels from the student model
-
+        number_f = 4
 
         self.e_conv1 = CSDN_Tem(3, number_f)
         self.e_conv2 = CSDN_Tem(number_f,number_f)
@@ -50,16 +57,15 @@ class enhance_net_nopool_student(nn.Module): # Renamed for clarity
 
         out = x
         
-        #LE curve
+        #LE curve - 4 iterations
         for _ in range(4):
              out = out + x_r * (out * out - out)
-        return out
+        return out    # -> enhanced image
  
     def forward(self, x):
         if self.scale_factor == 1:
             x_down = x
         else:
-            # Downsample input if scale_factor > 1
             x_down = F.interpolate(x, scale_factor=1/self.scale_factor, mode='bilinear')
 
         
@@ -68,14 +74,11 @@ class enhance_net_nopool_student(nn.Module): # Renamed for clarity
         
         x_r = F.tanh(self.e_conv3(x2))
                
-
-        # Upsample x_r back to original input size if needed
         if self.scale_factor == 1:
             x_r = x_r
         else:
             x_r = self.upsample(x_r)
 
-        # --- Apply enhancement ---
         enhance_image = self.enhance(x, x_r)
 
         return enhance_image, x_r

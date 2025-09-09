@@ -23,7 +23,6 @@ class L_color(nn.Module):
 class L_spa(nn.Module):
     def __init__(self):
         super(L_spa, self).__init__()
-        # Store kernel values as Python lists/numbers, not tensors
         self.kernel_left_data = [[0, 0, 0], [-1, 1, 0], [0, 0, 0]]
         self.kernel_right_data = [[0, 0, 0], [0, 1, -1], [0, 0, 0]]
         self.kernel_up_data = [[0, -1, 0], [0, 1, 0], [0, 0, 0]]
@@ -32,7 +31,6 @@ class L_spa(nn.Module):
         self.pool = nn.AvgPool2d(4)
     
     def create_kernels(self, device):
-        """Create kernels on the specified device"""
         kernel_left = torch.FloatTensor(self.kernel_left_data).to(device).unsqueeze(0).unsqueeze(0)
         kernel_right = torch.FloatTensor(self.kernel_right_data).to(device).unsqueeze(0).unsqueeze(0)
         kernel_up = torch.FloatTensor(self.kernel_up_data).to(device).unsqueeze(0).unsqueeze(0)
@@ -41,7 +39,7 @@ class L_spa(nn.Module):
     
     def forward(self, org, enhance):
         b, c, h, w = org.shape
-        device = org.device  # Get device from input tensor
+        device = org.device 
 
         org_mean = torch.mean(org, 1, keepdim=True)
         enhance_mean = torch.mean(enhance, 1, keepdim=True)
@@ -49,7 +47,6 @@ class L_spa(nn.Module):
         org_pool = self.pool(org_mean)			
         enhance_pool = self.pool(enhance_mean)	
 
-        # Create kernels on the same device as input
         kernel_left, kernel_right, kernel_up, kernel_down = self.create_kernels(device)
 
         weight_diff = torch.max(
@@ -102,15 +99,12 @@ class L_TV(nn.Module):
 
 
 class VGGPerceptualLoss(nn.Module):
-    """VGG-based perceptual loss as suggested in research (layers 2, 4, 7)"""
     def __init__(self, layers=[2, 4, 7]):
         super().__init__()
         self.layers = layers
-        # Load pretrained VGG19 features
         self.vgg = torchvision.models.vgg19(pretrained=True).features[:max(layers)+1].eval()
         for param in self.vgg.parameters():
             param.requires_grad = False
-        # Will move to CUDA in train_single_config after model initialization
 
     def forward(self, student_img, teacher_img):
         loss = 0
@@ -124,11 +118,8 @@ class VGGPerceptualLoss(nn.Module):
 class Sa_Loss(nn.Module):
     def __init__(self):
         super(Sa_Loss, self).__init__()
-        # print(1)
     def forward(self, x ):
-        # self.grad = np.ones(x.shape,dtype=np.float32)
         b,c,h,w = x.shape
-        # x_de = x.cpu().detach().numpy()
         r,g,b = torch.split(x , 1, dim=1)
         mean_rgb = torch.mean(x,[2,3],keepdim=True)
         mr,mg, mb = torch.split(mean_rgb, 1, dim=1)
@@ -136,7 +127,6 @@ class Sa_Loss(nn.Module):
         Dg = g-mg
         Db = b-mb
         k =torch.pow( torch.pow(Dr,2) + torch.pow(Db,2) + torch.pow(Dg,2),0.5)
-        # print(k)
         
 
         k = torch.mean(k)
@@ -144,9 +134,7 @@ class Sa_Loss(nn.Module):
 
 
 
-# 1. Multi-Region Exposure Control System
 class MultiRegionExposureLoss(nn.Module):
-    """Advanced exposure control that applies region-specific enhancement targets"""
     def __init__(self, patch_size=8, 
                  dark_target=1.2,      # Very aggressive for dark regions
                  mid_target=0.35,       # Strong boost for mid-tones
@@ -154,7 +142,7 @@ class MultiRegionExposureLoss(nn.Module):
                  dark_threshold=0.2,   # More aggressive dark region definition
                  mid_threshold=0.45,
                  bright_transition_width=0.6,     # Between thresholds = mid-tones
-                 bright_threshold=0.75): # Adjusted for your requirements
+                 bright_threshold=0.75):
         super(MultiRegionExposureLoss, self).__init__()
         self.patch_size = patch_size
         self.pool = nn.AvgPool2d(patch_size)
@@ -164,7 +152,6 @@ class MultiRegionExposureLoss(nn.Module):
         self.mid_target = mid_target
         self.bright_target_factor = bright_target_factor
         
-        # Thresholds for region identification
         self.dark_threshold = dark_threshold
         self.mid_threshold = mid_threshold
         self.bright_threshold = bright_threshold
@@ -175,7 +162,6 @@ class MultiRegionExposureLoss(nn.Module):
         self.bright_transition_width = 0.08
 
     def create_soft_masks(self, orig_mean_down):
-        """Create smooth, overlapping masks for different brightness regions"""
         # Dark mask: high value for very dark regions
         dark_mask = torch.sigmoid((self.dark_threshold - orig_mean_down) / self.dark_transition_width)
         
@@ -196,7 +182,7 @@ class MultiRegionExposureLoss(nn.Module):
         return dark_mask, mid_mask, bright_mask
 
     def compute_target_brightness(self, orig_mean_down):
-        """Compute target brightness with region-specific values"""
+        # Compute target brightness with region-specific values
         dark_mask, mid_mask, bright_mask = self.create_soft_masks(orig_mean_down)
         
         # Dark regions target fixed value
@@ -208,13 +194,11 @@ class MultiRegionExposureLoss(nn.Module):
         # Bright regions target scaled original value
         bright_target = orig_mean_down * self.bright_target_factor
         
-        # Combine targets based on masks
         return (dark_target * dark_mask + 
                 mid_target * mid_mask + 
                 bright_target * bright_mask)
 
     def forward(self, x, original_x):
-        """Calculate multi-region exposure loss"""
         b, c, h, w = x.shape
         
         # Compute mean intensity of the original image
@@ -231,7 +215,7 @@ class MultiRegionExposureLoss(nn.Module):
         # Calculate region-specific exposure loss
         region_loss = (x_mean_down - target_brightness) ** 2
         
-        # Additional component: Preserve local contrast
+        #Preserve local contrast
         orig_mean_pooled = F.interpolate(orig_mean, size=x_mean.shape[2:], mode='bilinear', align_corners=False)
         x_mean_pooled = F.interpolate(x_mean_down, size=x_mean.shape[2:], mode='bilinear', align_corners=False)
         

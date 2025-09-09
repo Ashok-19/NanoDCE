@@ -11,16 +11,13 @@ import random
 
 random.seed(1143)
 
-# Supported image formats
 IMAGE_EXTENSIONS = ['*.jpg', '*.jpeg', '*.png', '*.bmp', '*.tiff', '*.tif', '*.webp']
 
 def populate_train_list(lowlight_images_path):
     image_list_lowlight = []
     
-    # Get all images with supported formats
     for extension in IMAGE_EXTENSIONS:
         image_list_lowlight.extend(glob.glob(os.path.join(lowlight_images_path, extension)))
-        # Also check for uppercase extensions
         image_list_lowlight.extend(glob.glob(os.path.join(lowlight_images_path, extension.upper())))
     
     train_list = image_list_lowlight
@@ -42,7 +39,6 @@ class lowlight_loader(data.Dataset):
         try:
             data_lowlight = Image.open(data_lowlight_path)
             
-            # Convert to RGB if necessary (handles grayscale, RGBA, etc.)
             if data_lowlight.mode != 'RGB':
                 data_lowlight = data_lowlight.convert('RGB')
             
@@ -54,8 +50,6 @@ class lowlight_loader(data.Dataset):
             
         except Exception as e:
             print(f"Error loading image {data_lowlight_path}: {e}")
-            # Return a blank image or skip this sample
-            # You might want to implement better error handling here
             blank_image = torch.zeros(3, self.size, self.size)
             return blank_image
 

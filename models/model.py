@@ -5,6 +5,8 @@ import math
 import numpy as np
 
 
+# ZeroDCE++ (base model architecture with no changes)
+
 class CSDN_Tem(nn.Module):
     def __init__(self, in_ch, out_ch):
         super(CSDN_Tem, self).__init__()
@@ -40,7 +42,6 @@ class enhance_net_nopool(nn.Module):
 		self.upsample = nn.UpsamplingBilinear2d(scale_factor=self.scale_factor)
 		number_f = 32
 
-#   zerodce DWC + p-shared
 		self.e_conv1 = CSDN_Tem(3,number_f) 
 		self.e_conv2 = CSDN_Tem(number_f,number_f) 
 		self.e_conv3 = CSDN_Tem(number_f,number_f) 
