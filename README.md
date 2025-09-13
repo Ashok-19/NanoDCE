@@ -1,16 +1,16 @@
 
-# ZeroDCE_Extension-KD
+# NanoDCE
 
-Introducing the smallest variant of ZeroDCE family - **TinyDCE** with only 161 parameters that achieves similar results of ZeroDCE and ZeroDCE++
+Introducing the smallest variant of ZeroDCE family - **NanoDCE** with only 161 parameters that achieves similar results of ZeroDCE and ZeroDCE++
 
 This project is about using Knowledge Distillation method to compress the already small low light enhancement model [ZeroDCE++](https://github.com/Li-Chongyi/Zero-DCE_extension.git) to an even smaller version resulting in 98.5% (65.6x) smaller than ZeroDCE++ and 99.8% (493.3x) smaller than ZeroDCE while retaining similar results.
 
         ZeroDCE   - 79416 params
         ZeroDCE++ - 10561 params
 
-        TinyDCE   - 161 params (Proposed)
+        NanoDCE   - 161 params (Proposed)
 
-## Knowledge Distillation Training Method- visit [here](https://github.com/Ashok-19/TinyDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
+## Knowledge Distillation Training Method- visit [here](https://github.com/Ashok-19/NanoDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
 
 ## Architectural Changes
 The student retains Zero-DCE++'s core (curve estimation via iterative LE maps) but compresses aggressively:
@@ -32,7 +32,7 @@ This script will provide an approximate inference results but not an accurate on
 
 #### Sample Output
 
-Check the sample output [here](https://github.com/Ashok-19/TinyDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
+Check the sample output [here](https://github.com/Ashok-19/NanoDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
 
 ## Live Video Performance
 
@@ -59,7 +59,7 @@ Note: YOLO detection is optional
   * GPU - RTX 3050
           
 
-Refer [model.py](https://github.com/Ashok-19/TinyDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model.py) and [model_student.py](https://github.com/Ashok-19/TinyDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model_student.py) for Changes
+Refer [model.py](https://github.com/Ashok-19/NanoDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model.py) and [model_student.py](https://github.com/Ashok-19/NanoDCE/blob/c6e33399ecc731c8d72d6760062a3ca86d126113/models/model_student.py) for Changes
 
 ## Prerequisites
 

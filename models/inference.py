@@ -78,8 +78,7 @@ def benchmark_models_comprehensive(teacher_model_path, student_model_path, scale
     test_sizes = [
         (1, 3, 256, 256),
         (1, 3, 512, 512),
-        (1, 3, 1024, 1024),
-        (1,3,3840,2160)
+        (1, 3, 1024, 1024)
     ]
     
     results = {}
