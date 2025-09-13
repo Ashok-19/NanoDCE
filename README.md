@@ -10,7 +10,7 @@ This project is about using Knowledge Distillation method to compress the alread
 
         NanoDCE   - 161 params (Proposed)
 
-## Knowledge Distillation Training Method- visit [here](https://github.com/Ashok-19/NanoDCE/blob/bbd0cb20cf0a780499f56cc79b709ebac495b40e/sample_output.txt)
+## Knowledge Distillation Training Method- visit [here](https://github.com/Ashok-19/NanoDCE/blob/6bf06a4e33848c56aceb8fe9a355e4a038cbd8e6/models/Training.md)
 
 ## Architectural Changes
 The student retains Zero-DCE++'s core (curve estimation via iterative LE maps) but compresses aggressively:
@@ -72,7 +72,7 @@ Refer [model.py](https://github.com/Ashok-19/NanoDCE/blob/c6e33399ecc731c8d72d67
 
 Instead of using the same 2002 samples provided in the original model's [training data](https://github.com/Li-Chongyi/Zero-DCE_extension/tree/09f202b690f82da939b8e6ec8535960ae97ad8bd/Zero-DCE%2B%2B/data), an additional amount of another 4089 samples were added to original training data from various datasets such as LIME, DICM, LOL-v1, LOL-v2 ,LSRW (both huawei and nikon) and LoLI-street to avoid overfitting.
 
-
+Training data -> [Gdrive](https://drive.google.com/drive/folders/17GZqYFflO7JSbH7A4UeWEr01CT_266Ze?usp=drive_link)
 Before training create folder structure like below in the training directory.
 
                 /data-
@@ -94,14 +94,15 @@ To test the student model, use
 
 ## Model size comparison
 
-Refer [Param_check.ipynb]()
+Refer [Param_check.ipynb](https://github.com/Ashok-19/NanoDCE/blob/6bf06a4e33848c56aceb8fe9a355e4a038cbd8e6/Param_check.ipynb)
 
 ## FPGA Implementation
-To be updated...
+
+Refer [FPGA-ZeroDCE_Extension](https://github.com/Ashok-19/FPGA-ZeroDCE_extension.git)
 
 ## Results
 
-Results for both test images and videos were uploaded in this [GDrive]()
+Results for both test images and videos were uploaded in this [GDrive](https://drive.google.com/drive/folders/1-NzPEyCqdU4PwIbRDre48vN4SttSlAfv?usp=drive_link)
 
 
 ## Contact
